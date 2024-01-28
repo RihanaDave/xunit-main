@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Configurations>Debug;Debug_x86;Release;Release_x86</Configurations>
+    <OutputType>Exe</OutputType>
+    <RunILRepack>true</RunILRepack>
+    <TargetFrameworks>net472;net48;net481</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ILRepackExclusions Include="$(OutputPath)xunit.abstractions.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\xunit.v3.runner.utility\xunit.v3.runner.utility.csproj" />
+  </ItemGroup>
+
+</Project>

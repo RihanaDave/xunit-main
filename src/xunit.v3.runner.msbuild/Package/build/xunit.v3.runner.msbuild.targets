@@ -1,0 +1,31 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Condition=" '@(XunitTest_Assemblies)' == '' ">
+    <XunitTest_Assemblies Include="$(TargetPath)" />
+  </ItemGroup>
+
+  <Target Name="XunitTest" DependsOnTargets="$(XunitTest_TargetDependencies)">
+    <xunit AppDomains="$(XunitTest_AppDomains)"
+           Assemblies="@(XunitTest_Assemblies)"
+           DiagnosticMessages="$(XunitTest_DiagnosticMessages)"
+           ExcludeTraits="$(XunitTest_ExcludeTraits)"
+           FailSkips="$(XunitTest_FailSkips)"
+           Html="@(XunitTest_Html)"
+           IgnoreFailures="$(XunitTest_IgnoreFailures)"
+           IncludeTraits="$(XunitTest_IncludeTraits)"
+           InternalDiagnosticMessages="$(XunitTest_InternalDiagnosticMessages)"
+           JUnit="@(XunitTest_JUnit)"
+           MaxParallelThreads="$(XunitTest_MaxParallelThreads)"
+           NoAutoReporters="$(XunitTest_NoAutoReporters)"
+           NoLogo="$(XunitTest_NoLogo)"
+           NUnit="@(XunitTest_NUnit)"
+           ParallelizeAssemblies="$(XunitTest_ParallelizeAssemblies)"
+           ParallelizeTestCollections="$(XunitTest_ParallelizeTestCollections)"
+           Reporter="$(XunitTest_Reporter)"
+           ShadowCopy="$(XunitTest_ShadowCopy)"
+           StopOnFail="$(XunitTest_StopOnFail)"
+           WorkingFolder="$(XunitTest_WorkingFolder)"
+           Xml="@(XunitTest_Xml)"
+           XmlV1="@(XunitTest_XmlV1)"
+    />
+  </Target>
+</Project>

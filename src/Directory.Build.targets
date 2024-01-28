@@ -1,0 +1,127 @@
+<Project>
+  <!-- Conditional assert import for v3 test projects -->
+  <Choose>
+    <When Condition=" $(MSBuildProjectName.Contains('.v3.')) AND $(MSBuildProjectName.EndsWith('.tests')) ">
+      <ItemGroup>
+        <ProjectReference Condition=" '$(TargetFramework)' != 'net6.0' " Include="..\xunit.v3.assert\xunit.v3.assert.csproj" />
+        <ProjectReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="..\xunit.v3.assert.compat\xunit.v3.assert.net6\xunit.v3.assert.net6.csproj" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <!-- Enable building .NET Framework on non-Windows machines -->
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNetFrameworkReferenceAssembliesVersion)">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- Enable nullable support for older targets -->
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' OR '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <PackageReference Include="TunnelVisionLabs.ReferenceAssemblyAnnotator" Version="$(TunnelVisionLabsReferenceAssemblyAnnotatorVersion)">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageDownload Include="Microsoft.NETCore.App.Ref" Version="[$(MicrosoftNetCoreAppRefVersion)]" />
+  </ItemGroup>
+
+  <!-- On Unix-like systems, mark .NET Framework binaries as executable -->
+  <Target
+      Name="MarkBinaryExecutable"
+      AfterTargets="Build"
+      Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(OS)' != 'Windows_NT' AND $(TargetPath.EndsWith('.exe')) ">
+    <Exec Command="chmod +x '$(TargetPath)'" />
+  </Target>
+
+  <!-- Optional ILRepack targets for projects that want to opt-in -->
+  <Target
+      Name="ILRepack"
+      AfterTargets="Build"
+      Condition=" '$(TargetFramework)' != '' AND '$(RunILRepack)' == 'true' ">
+    <PropertyGroup>
+      <OutputAssembly>$([System.IO.Path]::Combine($(TargetDir), "merged", "$(TargetFileName)"))</OutputAssembly>
+    </PropertyGroup>
+
+    <Message Text="$(TargetName) -> $(OutputAssembly)" Importance="High" />
+    <CallTarget Targets="ILRepackConditional" />
+  </Target>
+
+  <Target
+      Name="ILRepackConditional"
+      Inputs="$(TargetPath)"
+      Outputs="$(TargetDir)merged\$(TargetFileName)">
+
+    <MakeDir Directories="$(TargetDir)merged" />
+
+    <PropertyGroup>
+      <MainAssembly>$([System.IO.Path]::Combine($(TargetDir), "$(TargetFileName)"))</MainAssembly>
+      <OutputAssembly>$([System.IO.Path]::Combine($(TargetDir), "merged", "$(TargetFileName)"))</OutputAssembly>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ILRepackDependencies
+          Include="$(TargetDir)*.dll"
+          Exclude="$(MainAssembly);@(ILRepackExclusions)"/>
+      <ILRepackLibPaths Include="$(TargetDir)" />
+      <ILRepackLibPaths Include="$(TargetFrameworkRootPath)$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\" Condition=" '$(TargetFrameworkRootPath)' != '' " />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(ILRepackExclusions)" DestinationFolder="$(TargetDir)merged" />
+    <Exec
+        StandardOutputImportance="low"
+        IgnoreStandardErrorWarningFormat="true"
+        Command="dotnet &quot;$(ILRepack)&quot; -internalize -ndebug @(ILRepackLibPaths->'-lib:%(FullPath)', ' ') -out:$(OutputAssembly) $(MainAssembly) @(ILRepackDependencies, ' ')" />
+    <Exec Command="chmod +x '$(OutputAssembly)'" Condition=" '$(OS)' != 'Windows_NT' AND $(OutputAssembly.EndsWith('.exe')) " />
+  </Target>
+
+  <!-- Support deterministic builds (via https://github.com/clairernovotny/DeterministicBuilds) -->
+  <PropertyGroup>
+    <ContinuousIntegrationBuild Condition=" '$(GITHUB_ACTIONS)' == 'true' ">true</ContinuousIntegrationBuild>
+    <TargetFrameworkMonikerAssemblyAttributesPath>$([System.IO.Path]::Combine('$(IntermediateOutputPath)','$(TargetFrameworkMoniker).AssemblyAttributes$(DefaultLanguageSourceExtension)'))</TargetFrameworkMonikerAssemblyAttributesPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <EmbeddedFiles Include="$(GeneratedAssemblyInfoFile)"/>
+  </ItemGroup>
+
+  <!-- Supplement Nerdbank.GitVersioning version calculations -->
+  <Target Name="UpdateAssemblyVersionInfo" BeforeTargets="GenerateAssemblyNBGVVersionInfo" DependsOnTargets="GetBuildVersion">
+    <PropertyGroup>
+      <!-- Local builds should have a '-dev' suffix on the build number -->
+      <PrereleaseSuffix Condition=" '$(GITHUB_ACTIONS)' != 'true' ">-dev</PrereleaseSuffix>
+      <!-- AssemblyVersion and AssemblyFileVersion should be x.y.z.0 -->
+      <AssemblyVersion>$(BuildVersionSimple)</AssemblyVersion>
+      <AssemblyFileVersion>$(BuildVersionSimple)</AssemblyFileVersion>
+      <!-- Always put the Git hash in the informational version, even for non-pre-release versions -->
+      <AssemblyInformationalVersion>$(BuildVersionSimple)$(PrereleaseVersion)$(PrereleaseSuffix)+$(GitCommitIdShort)</AssemblyInformationalVersion>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="UpdateNuSpecProperties" BeforeTargets="GenerateNuspec" DependsOnTargets="GetBuildVersion">
+    <ReadLinesFromFile File="$(MSBuildThisFileDirectory)..\.git\modules\src\xunit.v3.assert\Asserts\HEAD">
+      <Output TaskParameter="Lines" PropertyName="GitAssertModuleCommitId"/>
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <!-- Local builds should have a '-dev' suffix on the build number -->
+      <PrereleaseSuffix Condition=" '$(GITHUB_ACTIONS)' != 'true' ">-dev</PrereleaseSuffix>
+      <!-- Never put the Git hash in the package version -->
+      <PackageVersion>$(BuildVersionSimple)$(PrereleaseVersion)$(PrereleaseSuffix)</PackageVersion>
+      <PackageReleaseNotes>https://xunit.net/releases/v3/$(PackageVersion)</PackageReleaseNotes>
+      <!-- Pass through values we don't know ahead of time for any hand-crafted .nuspec files -->
+      <NuspecProperties>
+        Configuration=$(Configuration);
+        GitAssertModuleCommitId=$(GitAssertModuleCommitId);
+        GitCommitId=$(GitCommitId);
+        MicrosoftBclAsyncInterfacesVersion=$(MicrosoftBclAsyncInterfacesVersion);
+        MonoCecilVersion=$(MonoCecilVersion);
+        PackageVersion=$(PackageVersion);
+        SystemIoPipelinesVersion=$(SystemIoPipelinesVersion);
+        SystemNetHttpVersion=$(SystemNetHttpVersion);
+        SystemThreadingTasksExtensionsVersion=$(SystemThreadingTasksExtensionsVersion);
+        XunitAbstractionsVersion=$(XunitAbstractionsVersion);
+        XunitAnalyzersVersion=$(XunitAnalyzersVersion);
+      </NuspecProperties>
+    </PropertyGroup>
+  </Target>
+
+</Project>

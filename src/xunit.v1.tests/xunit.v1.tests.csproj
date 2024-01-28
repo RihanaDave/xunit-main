@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\common.tests\Utility\EnvironmentHelper.cs" LinkBase="Common.Tests" />
+    <Compile Include="..\xunit.v3.common\Internal\AssemblyExtensions.cs" LinkBase="Common" />
+    <Compile Include="..\xunit.v3.common\Internal\CallerArgumentExpressionAttribute.cs" LinkBase="Common" />
+    <Compile Include="..\xunit.v3.common\Internal\Guard.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsVersion)" />
+    <PackageReference Include="xunit.extensions" Version="[$(XunitV1Version)]" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.XML" />
+    <Reference Include="System.Web" />
+    <Reference Include="$(NuGetPackageRoot)\xunit\$(XunitV1Version)\lib\net20\xunit.runner.utility.dll" />
+  </ItemGroup>
+
+</Project>

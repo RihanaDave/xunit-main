@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\xunit.v3.runner.inproc.console\xunit.v3.runner.inproc.console.csproj" />
+  </ItemGroup>
+
+</Project>

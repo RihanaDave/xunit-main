@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <TargetFramework>net452</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\xunit.v3.common\Internal\AssemblyExtensions.cs" LinkBase="Common" />
+    <Compile Include="..\xunit.v3.common\Internal\CallerArgumentExpressionAttribute.cs" LinkBase="Common" />
+    <Compile Include="..\xunit.v3.common\Internal\Guard.cs" LinkBase="Common" />
+    <Compile Include="..\xunit.v3.common\Internal\DictionaryExtensions.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Stuck to 4.4.0 for compatibility with net452 -->
+    <PackageReference Include="NSubstitute" Version="4.4.0" />
+    <PackageReference Include="xunit.assert" Version="$(XunitV2Version)" />
+    <PackageReference Include="xunit.core" Version="$(XunitV2Version)" />
+    <PackageReference Include="xunit.runner.utility" Version="$(XunitV2Version)" />
+  </ItemGroup>
+
+</Project>

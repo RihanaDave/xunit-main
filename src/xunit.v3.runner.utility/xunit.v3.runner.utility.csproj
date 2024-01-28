@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName Condition=" '$(TargetFramework)' == 'net472' ">xunit.v3.runner.utility.net472</AssemblyName>
+    <AssemblyName Condition=" '$(TargetFramework)' == 'netstandard2.0' ">xunit.v3.runner.utility.netstandard20</AssemblyName>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETStandard' ">
+    <EmbeddedResource Include="Resources\*.rd.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mono.Cecil" Version="$(MonoCecilVersion)" />
+    <PackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\xunit.v3.runner.common\xunit.v3.runner.common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
+</Project>

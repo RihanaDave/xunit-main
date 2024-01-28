@@ -1,0 +1,125 @@
+<Project>
+  <Import Project="Versions.props" />
+
+  <!-- ============================== -->
+  <!-- Universal properties and items -->
+
+  <PropertyGroup>
+    <AssemblyName Condition=" '$(AssemblyName)' == '' ">$(MSBuildProjectName)</AssemblyName>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)signing.snk</AssemblyOriginatorKeyFile>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <DebugType Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' ">full</DebugType>
+    <DebugType Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">embedded</DebugType>
+    <DefineConstants>$(DefineConstants);XUNIT_IMMUTABLE_COLLECTIONS;XUNIT_NULLABLE;XUNIT_SKIP;XUNIT_SPAN</DefineConstants>
+    <LangVersion>10.0</LangVersion>
+    <MSBuildCopyContentTransitively>false</MSBuildCopyContentTransitively>
+    <NoWarn>$(NoWarn);NU5105;CS0436</NoWarn>
+    <RootNamespace>Xunit</RootNamespace>
+    <SignAssembly>true</SignAssembly>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)common/ExcludeFromCodeCoverageAttribute.cs" LinkBase="Common" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Version="$(NerdbankGitVersioningVersion)">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!-- ======================================== -->
+  <!-- Production-specific properties and items -->
+
+  <Choose>
+    <When Condition=" !$(MSBuildProjectName.EndsWith('.tests')) ">
+      <PropertyGroup>
+        <AnalysisLevel>latest-All</AnalysisLevel>
+        <Authors>jnewkirk;bradwilson</Authors>
+        <Company>.NET Foundation</Company>
+        <Copyright>Copyright (C) .NET Foundation</Copyright>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <EnableNETAnalyzers>true</EnableNETAnalyzers>
+        <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+        <Nullable>enable</Nullable>
+        <PackageIcon>_content/logo-128-transparent.png</PackageIcon>
+        <PackageId>$(MSBuildProjectName)</PackageId>
+        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+        <PackageReadmeFile>_content/README.md</PackageReadmeFile>
+        <Product>xUnit.net v3 Testing Framework</Product>
+        <RepositoryUrl>https://github.com/xunit/xunit</RepositoryUrl>
+      </PropertyGroup>
+
+      <ItemGroup>
+        <None Include="$(MSBuildThisFileDirectory)../tools/media/logo-128-transparent.png" Visible="false" Pack="true" PackagePath="_content" />
+        <None Include="$(MSBuildThisFileDirectory)../README.md" Visible="false" Pack="true" PackagePath="_content" />
+      </ItemGroup>
+
+      <ItemGroup>
+        <PackageReference Include="ILRepack" Version="$(ILRepackVersion)" />
+        <PackageReference Include="Microsoft.SourceLink.GitHub" Version="$(MicrosoftSourceLinkGitHubVersion)">
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+          <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <!-- ================================== -->
+  <!-- Test-specific properties and items -->
+
+  <!-- All test projects -->
+  <Choose>
+    <When Condition=" $(MSBuildProjectName.EndsWith('.tests')) ">
+      <PropertyGroup>
+        <Configurations>Debug;Debug_x86;Release;Release_x86</Configurations>
+      </PropertyGroup>
+
+      <ItemGroup>
+        <Content Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <!-- V3-specific test projects -->
+  <Choose>
+    <When Condition=" $(MSBuildProjectName.Contains('.v3.')) AND $(MSBuildProjectName.EndsWith('.tests')) ">
+      <PropertyGroup>
+        <ApplicationManifest>..\xunit.v3.runner.console\app.manifest</ApplicationManifest>
+        <NoWarn>$(NoWarn);xUnit1000</NoWarn>
+        <Nullable>enable</Nullable>
+        <OutputType>Exe</OutputType>
+      </PropertyGroup>
+
+      <ItemGroup>
+        <Compile Include="..\common.tests\**\*.cs" LinkBase="Common.Tests" />
+      </ItemGroup>
+
+      <ItemGroup>
+        <PackageReference Include="NSubstitute" Version="$(NSubstituteVersion)" />
+        <PackageReference Include="System.CodeDom" Version="[$(SystemCodeDomVersion)]" />
+        <PackageReference Include="System.ComponentModel.TypeConverter" Version="$(SystemComponentModelTypeConverterVersion)" />
+        <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersVersion)" PrivateAssets="all" />
+      </ItemGroup>
+
+      <ItemGroup>
+        <ProjectReference Include="..\xunit.v3.core\xunit.v3.core.csproj" />
+        <ProjectReference Include="..\xunit.v3.runner.inproc.console\xunit.v3.runner.inproc.console.csproj" />
+        <ProjectReference Include="..\xunit.v3.runner.tdnet\xunit.v3.runner.tdnet.csproj" />
+      </ItemGroup>
+    </When>
+  </Choose>
+
+  <!-- ============= -->
+  <!-- 32-bit builds -->
+
+  <PropertyGroup Condition="$(Configuration.EndsWith('_x86'))">
+    <AssemblyName>$(AssemblyName).x86</AssemblyName>
+    <DefineConstants>$(DefineConstants);BUILD_X86</DefineConstants>
+    <PlatformTarget>x86</PlatformTarget>
+    <RunCommand Condition=" '$(OS)' == 'Windows_NT' ">$(MSBuildProgramFiles32)\dotnet\dotnet</RunCommand>
+  </PropertyGroup>
+
+</Project>

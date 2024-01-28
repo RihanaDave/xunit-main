@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>Xunit.Runner.MSBuild</RootNamespace>
+    <RunILRepack>true</RunILRepack>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ILRepackExclusions Include="$(OutputPath)xunit.abstractions.dll" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\tools\builder\msbuild\netfx.proj" LinkBase="builder" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build.Framework" />
+    <Reference Include="Microsoft.Build.Utilities.v4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\xunit.v3.runner.utility\xunit.v3.runner.utility.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);XUNIT_ARGUMENTFORMATTER_PRIVATE</DefineConstants>
+    <Description>Includes common code shared between xunit.v3.core and xunit.v3.runner.common (xunit.v3.common.dll). Supports .NET Standard 2.0.</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Title>xUnit.net v3 [Common Library]</Title>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\xunit.v3.assert\Asserts\Sdk\ArgumentFormatter.cs" LinkBase="Common\Asserts" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Text.Json" Version="[$(SystemTextJsonVersion)]" />
+  </ItemGroup>
+
+</Project>
